@@ -30,20 +30,26 @@ export const Assignment = mongoose.model(
             type: String,
             required: true,
           },
-          mark:{
-              type:Number,
-              default:1
-          }
+          mark: {
+            type: Number,
+            default: 1,
+          },
         },
       ],
       totalMark: {
         type: Number,
         default: 0,
       },
-        faculty: {
+      faculty: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        }
+      },
+      attendedStudents: [
+        {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+      ]
     },
     {
       timestamps: true,

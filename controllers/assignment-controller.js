@@ -4,7 +4,10 @@ import { User } from "../models/user-model.js";
 export const newAssignment = async (req, res) => {
   const faculty = await User.findById(req.user._id);
   const exAssignment = await Assignment.findOne({ title: req.body.title });
-  if (exAssignment)return res.status(400).json({ message: "An assignment with this title already exists" });
+  if (exAssignment)
+    return res
+      .status(400)
+      .json({ message: "An assignment with this title already exists" });
   if (!faculty.isFaculty)
     return res.status(403).json({ message: "Access denied." });
   const assignment = new Assignment(req.body);
@@ -24,6 +27,8 @@ export const newAssignment = async (req, res) => {
 };
 
 export const allAssignments = async (req, res) => {
-  const assignments = await Assignment.find();
+  const assignments = await Assignment.find().select(
+    "questions.question title totalMark faculty questions.options"
+  );
   res.status(200).json(assignments);
 };
