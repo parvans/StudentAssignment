@@ -30,10 +30,11 @@ export const Assignment = mongoose.model(
             type: String,
             required: true,
           },
-          // marks:{
-          //     type:Number,
-          //     required:true
-          // }
+          mark:{
+              type:Number,
+              required:true,
+              default:1
+          }
         },
       ],
       totalMark: {

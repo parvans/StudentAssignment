@@ -18,6 +18,10 @@ export const User = mongoose.model(
       required: true,
       minlength:8
     },
+    isFaculty: {
+        type: Boolean,
+        default: false,
+    }
   },{
     timestamps:true
   })
