@@ -32,7 +32,6 @@ export const Assignment = mongoose.model(
           },
           mark:{
               type:Number,
-              required:true,
               default:1
           }
         },
@@ -44,7 +43,6 @@ export const Assignment = mongoose.model(
         faculty: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true,
         }
     },
     {

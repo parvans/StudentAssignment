@@ -4,6 +4,6 @@ import auth from "../middleware/auth.js";
 import { allAssignments, newAssignment } from "../controllers/assignment-controller.js";
 const router = express.Router();
 router.get("/allassignments",allAssignments);
-router.post("/newassignment",newAssignment);
+router.post("/newassignment",[faculty,auth],newAssignment);
 
 export default router;
