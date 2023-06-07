@@ -1,6 +1,8 @@
 import { User } from "../models/user-model.js";
 import { comparePassword, hashPassword } from "../utilities/bcrypt.js";
 import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
+dotenv.config();    
 export const userRegister = async (req, res) => {
   const { name, email, password } = req.body;
   const exUser = await User.findOne({ email });
@@ -22,11 +24,7 @@ export const userLogin = async (req, res) => {
     await comparePassword(password,userAvail.password).then((result)=>{
         if(!result) return res.status(400).json({message:"Password does not match"});
         const token=jwt.sign({_id:userAvail._id},process.env.JWT_SECRET,{expiresIn:"1d"});
-
-        res.status(200).json({
-            message:"Login successful",
-            token:token,
-        });
+        res.header("x-auth-token",token).json({message:"User logged in successfully",token:token});
     }).catch((err)=>{
         res.status(400).json({ message: err.message });
     });
