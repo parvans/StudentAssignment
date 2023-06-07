@@ -13,3 +13,8 @@ export const newAssignment = async (req, res) => {
         await updatedAssignment.save();
     res.status(200).json({message:"Assignment created successfully"});
 }
+
+export const allAssignments = async (req, res) => {
+    const assignments = await Assignment.find();
+    res.status(200).json(assignments);
+}
