@@ -47,7 +47,7 @@ export const Assignment = mongoose.model(
       attendedStudents: [
         {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
+          ref: "HomeWork",
         },
       ]
     },
