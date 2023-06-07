@@ -41,6 +41,11 @@ export const Assignment = mongoose.model(
         type: Number,
         default: 0,
       },
+        faculty: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        }
     },
     {
       timestamps: true,
