@@ -20,12 +20,13 @@ export const HomeWork = mongoose.model(
                 },
                 answer: {
                     type: String,
-                    required: true,
-                },
-                mark:{
-                    type:Number,
-                    default:0
+                    default: "",
                 }
+                // ,
+                // mark:{
+                //     type:Number,
+                //     default:0
+                // }
             }
         ],
         totalMark: {
