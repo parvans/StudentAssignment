@@ -41,7 +41,7 @@ export const allAssigns = async (req, res) => {
   const checkUser=await User.findOne({_id:userId,isFaculty:true});
  let assign
   if(checkUser){
-    assign = await Assignment.find()
+    assign = await Assignment.find().populate('attendedStudents')
   }else{
     assign = await Assignment.find().select("questions.question title totalMark faculty questions.options")
   }
