@@ -1,7 +1,8 @@
 import { Assignment } from "../models/assignment-model.js";
 import { HomeWork } from "../models/homework-model.js";
 import { User } from "../models/user-model.js";
-
+import PDFDocument from 'pdfkit'
+import fs from 'fs'
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -93,4 +94,22 @@ export const getStuPertiAttHomeWork = async (req, res) => {
     const getAAssign=await HomeWork.findOne({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents')
     if(!getAAssign) return res.status(404).json({message:"This student has not attended this assignment"});
     res.status(200).json(getAAssign);
+}
+
+export const stuToPdf = async (req, res) => {
+    const userId=req.user._id;
+    const student=await User.findOne({_id:userId,isFaculty:false});
+// Create a document
+const doc = new PDFDocument();
+  // Saving the pdf file in root directory.
+  const time=new Date().getTime();
+doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
+
+doc.fontSize(27).text(`Student Name: ${student.name}`, 100, 100).fillColor('red');
+doc.fontSize(27).text(`Student Email: ${student.email}`, 100, 150).fillColor('green');
+
+// Finalize PDF file
+doc.end();
+
+res.status(200).json({message:"Pdf created successfully"});
 }
