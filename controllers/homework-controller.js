@@ -68,3 +68,29 @@ export const getAllHomeWork = async (req, res) => {
     const getAllHomeWork = await HomeWork.find()
     res.status(200).json(getAllHomeWork);
 }
+
+export const getAStudentHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const user=await User.findOne({_id:userId,isFaculty:true});
+    if(!user) return res.status(403).json({message:"Access denied"});
+    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId")
+    if(!getAAssign) return res.status(404).json({message:"Assignment not found with this student"});
+    res.status(200).json(getAAssign);
+}
+
+export const getStuAttHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const stuDent=await User.findOne({_id:userId});
+    if(!stuDent) return res.status(403).json({message:"Student not found"});
+    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId")
+    if(!getAAssign) return res.status(404).json({message:"This student has not attended any assignment"});
+    res.status(200).json(getAAssign);
+}
+export const getStuPertiAttHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const stuDent=await User.findOne({_id:userId});
+    if(!stuDent) return res.status(403).json({message:"Student not found"});
+    const getAAssign=await HomeWork.findOne({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents')
+    if(!getAAssign) return res.status(404).json({message:"This student has not attended this assignment"});
+    res.status(200).json(getAAssign);
+}
