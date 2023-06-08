@@ -26,9 +26,21 @@ export const newAssignment = async (req, res) => {
   res.status(200).json({ message: "Assignment created successfully" });
 };
 
-export const allAssignments = async (req, res) => {
-  const assignments = await Assignment.find().select(
-    "questions.question title totalMark faculty questions.options"
-  );
-  res.status(200).json(assignments);
+export const allAssigns = async (req, res) => {
+  
+  const userId = req.user._id;
+  const checkUser=await User.findOne({_id:userId,isFaculty:true});
+ let assign
+  if(checkUser){
+    assign = await Assignment.find()
+  }else{
+    assign = await Assignment.find().select("questions.question title totalMark faculty questions.options")
+  }
+  res.status(200).json(assign);
 };
+
+export const getAssign = async (req, res) => {
+  const assign = await Assignment.findById(req.params.id);
+  if (!assign)return res.status(404).json({ message: "Assignment not found" });
+  res.status(200).json(assign);
+}
