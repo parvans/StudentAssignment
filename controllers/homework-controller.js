@@ -23,7 +23,7 @@ export const attentAssignment = async (req, res) => {
         assignmentId:req.params.id,
         answers:questions.map(question=>{
             return {
-                question:question.question,
+                question:question._id,
                 // answer:req.body,
             }
         })
