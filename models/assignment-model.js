@@ -10,6 +10,11 @@ export const Assignment = mongoose.model(
       },
       questions: [
         {
+          questionNo: {
+            type: Number,
+            required: true,
+            default: 0,
+          },
           question: {
             type: String,
             required: true,

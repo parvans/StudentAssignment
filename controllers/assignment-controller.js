@@ -16,6 +16,15 @@ export const newAssignment = async (req, res) => {
     result._id,
     {
       faculty: req.user._id,
+      questions: req.body.questions.map((question) => {
+        return {
+          questionNo: req.body.questions.indexOf(question) + 1,
+          question: question.question,
+          options: question.options,
+          answer: question.answer,
+          mark: question.mark,
+        };
+      }),
       totalMark: assignment.questions.reduce(
         (total, question) => total + question.mark,
         0

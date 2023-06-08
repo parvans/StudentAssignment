@@ -14,9 +14,9 @@ export const HomeWork = mongoose.model(
       },
         answers: [
             {
-                questId:{
-                    type:String,
-                    required:true
+                questNo:{
+                    type:Number,
+                    required:true,
                 },
                 answer: {
                     type: String,
