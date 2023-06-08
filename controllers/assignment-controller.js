@@ -48,8 +48,17 @@ export const allAssigns = async (req, res) => {
   res.status(200).json(assign);
 };
 
-export const getAssign = async (req, res) => {
-  const assign = await Assignment.findById(req.params.id);
-  if (!assign)return res.status(404).json({ message: "Assignment not found" });
+export const getAAssign = async (req, res) => {
+  const userId = req.user._id;
+  // const assign = await Assignment.findById(req.params.id);
+  // if (!assign)return res.status(404).json({ message: "Assignment not found" });
+  // res.status(200).json(assign);
+  const identUser=await User.findOne({_id:userId,isFaculty:true});
+  let assign
+  if(identUser){
+    assign = await Assignment.findById(req.params.id).populate('attendedStudents')
+  }else{
+    assign = await Assignment.findById(req.params.id).select("questions.question title totalMark faculty questions.options")
+  }
   res.status(200).json(assign);
 }
