@@ -14,7 +14,7 @@ export const HomeWork = mongoose.model(
       },
         answers: [
             {
-                question:{
+                questId:{
                     type:String,
                     required:true
                 },

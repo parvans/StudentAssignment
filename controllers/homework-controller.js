@@ -30,15 +30,26 @@ export const attentAssignment = async (req, res) => {
     })
     const result=await newHomeWork.save();
     
+    // result.answers.map(async (answer)=>{
+    //     const question=assignment.questions.find(question=>question.question===answer.question);
+    //     if(question.answer===answer.answer){
+    //         const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
+    //             $inc:{totalMark:question.mark}
+    //         },{new:true});
+    //     }
+    //     console.log(question);
+    // })
+
     result.answers.map(async (answer)=>{
-        const question=assignment.questions.find(question=>question.question===answer.question);
+        const question=assignment.questions.find(question=>question._id==answer.question);
         if(question.answer===answer.answer){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
                 $inc:{totalMark:question.mark}
             },{new:true});
         }
-        console.log(question);
+        // console.log(question);
     })
+    
     res.status(200).json({message:"Assignment submitted successfully"});
 
 }
