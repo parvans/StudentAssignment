@@ -9,5 +9,5 @@ router.get("/getastuass/:id",[faculty,auth],getAStudentHomeWork);
 router.get("/getastuattass",auth,getStuAttHomeWork)
 router.get("/getastupertiattass/:id",auth,getStuPertiAttHomeWork)
 
-router.get("/getpdf",auth,stuToPdf);
+router.get("/getpdf/:id",auth,stuToPdf);
 export default router;

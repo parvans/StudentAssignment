@@ -3,6 +3,7 @@ import { HomeWork } from "../models/homework-model.js";
 import { User } from "../models/user-model.js";
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
+import { get } from "http";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -99,14 +100,21 @@ export const getStuPertiAttHomeWork = async (req, res) => {
 export const stuToPdf = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
+    const getAAssign=await HomeWork.find({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents').populate("studentId")
 // Create a document
 const doc = new PDFDocument();
   // Saving the pdf file in root directory.
   const time=new Date().getTime();
 doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
 
-doc.fontSize(27).text(`Student Name: ${student.name}`, 100, 100).fillColor('red');
-doc.fontSize(27).text(`Student Email: ${student.email}`, 100, 150).fillColor('green');
+
+// doc.fontSize(15).text(`Student Name: ${student.name}`, 100, 100).fillColor('black');
+getAAssign.map((assignment)=>{
+    doc.fontSize(25).text(`${assignment.assignmentId.title}`, 100, 100).fillColor('yellow');
+    // doc.fontSize(15).text(`Student Name: ${assignment.studentId.name}`, 200, 200).fillColor('black');
+    // doc.fontSize(15).text(`Total Mark: ${assignment.assignmentId.totalMark}`, 100, 100).fillColor('black');
+})
+console.log(getAAssign);
 
 // Finalize PDF file
 doc.end();
