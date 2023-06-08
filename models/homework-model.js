@@ -14,18 +14,19 @@ export const HomeWork = mongoose.model(
       },
         answers: [
             {
-                question:{
-                    type:String,
-                    required:true
+                questNo:{
+                    type:Number,
+                    required:true,
                 },
                 answer: {
                     type: String,
-                    required: true,
-                },
-                mark:{
-                    type:Number,
-                    default:0
+                    default: "",
                 }
+                // ,
+                // mark:{
+                //     type:Number,
+                //     default:0
+                // }
             }
         ],
         totalMark: {

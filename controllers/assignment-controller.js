@@ -16,6 +16,15 @@ export const newAssignment = async (req, res) => {
     result._id,
     {
       faculty: req.user._id,
+      questions: req.body.questions.map((question) => {
+        return {
+          questionNo: req.body.questions.indexOf(question) + 1,
+          question: question.question,
+          options: question.options,
+          answer: question.answer,
+          mark: question.mark,
+        };
+      }),
       totalMark: assignment.questions.reduce(
         (total, question) => total + question.mark,
         0
@@ -26,9 +35,30 @@ export const newAssignment = async (req, res) => {
   res.status(200).json({ message: "Assignment created successfully" });
 };
 
-export const allAssignments = async (req, res) => {
-  const assignments = await Assignment.find().select(
-    "questions.question title totalMark faculty questions.options"
-  );
-  res.status(200).json(assignments);
+export const allAssigns = async (req, res) => {
+  
+  const userId = req.user._id;
+  const checkUser=await User.findOne({_id:userId,isFaculty:true});
+ let assign
+  if(checkUser){
+    assign = await Assignment.find().populate('attendedStudents')
+  }else{
+    assign = await Assignment.find().select("questions.question title totalMark faculty questions.options")
+  }
+  res.status(200).json(assign);
 };
+
+export const getAAssign = async (req, res) => {
+  const userId = req.user._id;
+  // const assign = await Assignment.findById(req.params.id);
+  // if (!assign)return res.status(404).json({ message: "Assignment not found" });
+  // res.status(200).json(assign);
+  const identUser=await User.findOne({_id:userId,isFaculty:true});
+  let assign
+  if(identUser){
+    assign = await Assignment.findById(req.params.id).populate('attendedStudents')
+  }else{
+    assign = await Assignment.findById(req.params.id).select("questions.question title totalMark faculty questions.options")
+  }
+  res.status(200).json(assign);
+}
