@@ -29,4 +29,9 @@ export const userLogin = async (req, res) => {
         res.status(400).json({ message: err.message });
     });
 };
+
+export const allStudents = async (req, res) => {
+    const students = await User.find({isFaculty:false}).select("-password");
+    res.status(200).json({students:students});
+}
     
