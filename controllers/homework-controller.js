@@ -159,7 +159,7 @@ export const generatePdf = async (req, res) => {
             },
             path:filePath,
         };
-        function getBase64Image(data) 
+
 
         pdf.create(document,options).then((res)=>{
             console.log(res);
@@ -206,4 +206,5 @@ export const getAllStuPdf = async (req, res) => {
         })
 
         res.status(200).json({message:"Pdf created successfully"});
-}
+}    
+
