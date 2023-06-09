@@ -1,7 +1,9 @@
 import { Assignment } from "../models/assignment-model.js";
 import { HomeWork } from "../models/homework-model.js";
 import { User } from "../models/user-model.js";
-
+import PDFDocument from 'pdfkit'
+import fs from 'fs'
+import { get } from "http";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -67,4 +69,55 @@ export const attentAssignment = async (req, res) => {
 export const getAllHomeWork = async (req, res) => {
     const getAllHomeWork = await HomeWork.find()
     res.status(200).json(getAllHomeWork);
+}
+
+export const getAStudentHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const user=await User.findOne({_id:userId,isFaculty:true});
+    if(!user) return res.status(403).json({message:"Access denied"});
+    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId")
+    if(!getAAssign) return res.status(404).json({message:"Assignment not found with this student"});
+    res.status(200).json(getAAssign);
+}
+
+export const getStuAttHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const stuDent=await User.findOne({_id:userId});
+    if(!stuDent) return res.status(403).json({message:"Student not found"});
+    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId")
+    if(!getAAssign) return res.status(404).json({message:"This student has not attended any assignment"});
+    res.status(200).json(getAAssign);
+}
+export const getStuPertiAttHomeWork = async (req, res) => {
+    const userId=req.user._id;
+    const stuDent=await User.findOne({_id:userId});
+    if(!stuDent) return res.status(403).json({message:"Student not found"});
+    const getAAssign=await HomeWork.findOne({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents')
+    if(!getAAssign) return res.status(404).json({message:"This student has not attended this assignment"});
+    res.status(200).json(getAAssign);
+}
+
+export const stuToPdf = async (req, res) => {
+    const userId=req.user._id;
+    const student=await User.findOne({_id:userId,isFaculty:false});
+    const getAAssign=await HomeWork.find({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents').populate("studentId")
+// Create a document
+const doc = new PDFDocument();
+  // Saving the pdf file in root directory.
+  const time=new Date().getTime();
+doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
+
+
+// doc.fontSize(15).text(`Student Name: ${student.name}`, 100, 100).fillColor('black');
+getAAssign.map((assignment)=>{
+    doc.fontSize(25).text(`${assignment.assignmentId.title}`, 100, 100).fillColor('yellow');
+    // doc.fontSize(15).text(`Student Name: ${assignment.studentId.name}`, 200, 200).fillColor('black');
+    // doc.fontSize(15).text(`Total Mark: ${assignment.assignmentId.totalMark}`, 100, 100).fillColor('black');
+})
+console.log(getAAssign);
+
+// Finalize PDF file
+doc.end();
+
+res.status(200).json({message:"Pdf created successfully"});
 }
