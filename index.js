@@ -4,9 +4,12 @@ import connectDB from "./db/db.js";
 import userRoute from "./routes/user.routes.js";
 import assignRoute from "./routes/assign.routes.js";
 import studentRoute from "./routes/homework.routes.js";
+import path from 'path'
 const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+const __dirname = path.resolve()
+app.use(express.static(path.join(__dirname, 'public')))
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });

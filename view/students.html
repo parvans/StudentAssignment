@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Students</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-12 col-md-8 offset-md-2">
+                <h1 style="text-align:center">
+                    Students Report List
+                </h1>
+            </div>
+            <div class="col-12 col-md-8 offset-md-2">
+                <table id="table" style="width:100%; border-collapse:collapse; border:1px solid #ddd">
+                    <thead>
+                        <tr>
+                            <th style="border:1px solid #ddd; padding:5px">Student Name</th>
+                            <th style="border:1px solid #ddd; padding:5px">Assignment</th>
+                            <th style="border:1px solid #ddd; padding:5px">Total Mark</th>
+                            <th style="border:1px solid #ddd; padding:5px">Student Mark</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            {{#each students}}
+                        <tr>
+                            <td style="border:1px solid #ddd; padding:5px; text-align:center">
+                                {{this.student}}
+                            </td>
+                            <td style="border:1px solid #ddd; padding:5px; text-align:center">
+                                {{this.assignment}}
+                            </td>
+                            <td style="border:1px solid #ddd; padding:5px; text-align:center">
+                                {{this.totalMark}}
+                            </td>
+                            <td style="border:1px solid #ddd; padding:5px; text-align:center">
+                                {{this.studentMark}}
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+            </div>
+        </div>
+</body>
+</html>
