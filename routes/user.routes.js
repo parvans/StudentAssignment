@@ -5,5 +5,5 @@ import auth from "../middleware/auth.js";
 const router = express.Router();
 router.post("/register",[faculty,auth],userRegister);
 router.post("/login",userLogin);
-router.get('/allstudents',allStudents);
+router.get('/allstudents',[faculty,auth],allStudents);
 export default router;
