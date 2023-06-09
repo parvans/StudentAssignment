@@ -4,6 +4,9 @@ import { User } from "../models/user-model.js";
 import PDFDocument from 'pdfkit'
 import fs from 'fs'
 import { get } from "http";
+import path from "path";
+import options from '../helpers/options.js'
+import pdf from "pdf-creator-node";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -121,3 +124,87 @@ doc.end();
 
 res.status(200).json({message:"Pdf created successfully"});
 }
+
+
+export const generatePdf = async (req, res) => {
+    const studentId=req.query.id;
+    const assignmentId=req.params.id;
+    const __dirname=path.resolve();
+    const html=fs.readFileSync(path.join(__dirname,'./view/template.html'),'utf-8');
+    const fileName=Math.random()+"_doc"+'.pdf';
+    const filePath=path.join('./data',fileName);
+    const getStudetAsssign=await HomeWork.findOne({studentId:studentId,assignmentId:assignmentId}).populate("assignmentId",'-attendedStudents').populate("studentId")
+
+    // console.log(getStudetAsssign.assignmentId.questions);
+    const document={
+            html:html,
+            data:{
+                    student:getStudetAsssign.studentId.name,
+                    assignment:getStudetAsssign.assignmentId.title,
+                    totalMark:getStudetAsssign.assignmentId.totalMark,
+                    studentMark:getStudetAsssign.totalMark+" / "+getStudetAsssign.assignmentId.totalMark,
+                    questions:getStudetAsssign.assignmentId.questions.map((question)=>{
+                        return {
+                            question:question.question,
+                            mark:question.mark,
+                            currectAnswer:question.answer,
+                        }
+                    }),
+                    answers:getStudetAsssign.answers.map((answer)=>{
+                        return {
+                            question:answer.questNo,
+                            answer:answer.answer,
+                        }
+                    })
+            },
+            path:filePath,
+        };
+
+
+        pdf.create(document,options).then((res)=>{
+            console.log(res);
+        }).catch((error)=>{
+            console.log(error);
+        })
+            
+            res.status(200).json({message:"Pdf created successfully"});
+            // res.status(200).json(getStudetAsssign);
+
+}
+
+export const getAllStuPdf = async (req, res) => {
+    const getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+    // res.status(200).json(getAllHome);
+
+    const __dirname=path.resolve();
+    const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
+    const fileName=Math.random()+"_doc"+'.pdf';
+    const filePath=path.join('./data',fileName);
+    const document={
+            html:html,
+            data:{
+                    students:getAllHome.map((home)=>{
+                        return {
+                            student:home.studentId.name,
+                            assignment:home.assignmentId.title,
+                            totalMark:home.assignmentId.totalMark,
+                            studentMark:home.totalMark+" / "+home.assignmentId.totalMark,
+                            questions:home.assignmentId.questions,
+                            answers:home.answers,
+                        }
+                    }
+                    )
+            },
+            path:filePath,
+        };
+
+        pdf.create(document,options).then((res)=>{
+            console.log(res);
+        }
+        ).catch((error)=>{
+            console.log(error);
+        })
+
+        res.status(200).json({message:"Pdf created successfully"});
+}    
+
