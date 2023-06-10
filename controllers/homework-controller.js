@@ -207,6 +207,28 @@ export const getAllStuPdf = async (req, res) => {
                 }]
             }
         }
+
+
+
+        // type: 'pie',
+        // data: {
+        //     labels: getAllHome.map((home)=>{
+        //         return home.studentId.name;
+        //     }),
+        //     datasets: [{
+        //         label: 'Total Mark',
+        //         data: getAllHome.map((home)=>{
+        //             return home.totalMark;
+        //         }),
+        //     }]
+        // },
+        // options: {
+        //     title: {
+        //         display: true,
+        //         text: 'Total Mark',
+        //         fontSize: 36,
+        //     }
+            
     });
     const chartUrl = await myChart.getShortUrl();
     const document={
