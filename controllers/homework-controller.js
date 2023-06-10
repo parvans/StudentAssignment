@@ -7,6 +7,7 @@ import { get } from "http";
 import path from "path";
 import options from '../helpers/options.js'
 import pdf from "pdf-creator-node";
+import QuickChart from "quickchart-js";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -53,7 +54,7 @@ export const attentAssignment = async (req, res) => {
                 $set:{[`answers.${answer.questNo-1}.mark`]:0}
             },{new:true});
         }
-        if(question.answer===answer.answer){
+        if(question?.answer===answer.answer){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
                 $inc:{totalMark:question.mark}
             },{new:true});
@@ -180,6 +181,56 @@ export const getAllStuPdf = async (req, res) => {
     const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
     const fileName=Math.random()+"_doc"+'.pdf';
     const filePath=path.join('./data',fileName);
+
+    //chart data
+    const myChart = new QuickChart();
+    myChart.setConfig({
+        type: 'bar',
+        data: {
+            labels: getAllHome.map((home)=>{
+                return home.studentId.name;
+            }),
+            datasets: [{
+                label: 'Total Mark',
+                data: getAllHome.map((home)=>{
+                    return home.totalMark;
+                }),
+            }]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }]
+            }
+        }
+
+
+
+        // type: 'pie',
+        // data: {
+        //     labels: getAllHome.map((home)=>{
+        //         return home.studentId.name;
+        //     }),
+        //     datasets: [{
+        //         label: 'Total Mark',
+        //         data: getAllHome.map((home)=>{
+        //             return home.totalMark;
+        //         }),
+        //     }]
+        // },
+        // options: {
+        //     title: {
+        //         display: true,
+        //         text: 'Total Mark',
+        //         fontSize: 36,
+        //     }
+            
+    });
+    const chartUrl = await myChart.getShortUrl();
     const document={
             html:html,
             data:{
@@ -190,10 +241,10 @@ export const getAllStuPdf = async (req, res) => {
                             totalMark:home.assignmentId.totalMark,
                             studentMark:home.totalMark+" / "+home.assignmentId.totalMark,
                             questions:home.assignmentId.questions,
-                            answers:home.answers,
+                            answers:home.answers
                         }
-                    }
-                    )
+                    }),
+                    chartUrl:chartUrl
             },
             path:filePath,
         };
