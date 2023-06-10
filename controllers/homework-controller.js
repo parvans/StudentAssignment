@@ -53,7 +53,7 @@ export const attentAssignment = async (req, res) => {
                 $set:{[`answers.${answer.questNo-1}.mark`]:0}
             },{new:true});
         }
-        if(question.answer===answer.answer){
+        if(question?.answer===answer.answer){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
                 $inc:{totalMark:question.mark}
             },{new:true});
