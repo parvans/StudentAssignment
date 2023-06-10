@@ -42,32 +42,10 @@
                         {{/each}}
                     </tbody>
             </div>
+            <div class="col-12 col-md-8 offset-md-2">
+                <img src={{chartUrl}} alt="chart" style="width:50%; height:50%; margin-left:25%">
+            </div>
         </div>
 </body>
-<script src="https://d3js.org/d3.v3.min.js"></script>
-<script>
-    var margin  = {top: 20, right: 20, bottom: 100, left: 60},
-        width   = 600 - margin.left - margin.right,
-        height  = 400 - margin.top - margin.bottom,
-        x       = d3.scale.ordinal().rangeRoundBands([0,width], 0.5),
-        y       = d3.scale.linear().range([height,0]);
 
-        var xAxis   = d3.svg.axis()
-        .scale(x)
-        .orient("bottom");
-  var yAxis   = d3.svg.axis()
-        .scale(y)
-        .orient("left")
-        .ticks(5)
-        .innerTickSize(-width)
-        .outerTickSize(0)
-        .tickPadding(10);
-
-        var svg     = d3.select("#wordCountContainer")
-        .append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
-</script>
 </html>
