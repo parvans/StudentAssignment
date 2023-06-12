@@ -179,41 +179,42 @@ export const getAllStuPdf = async (req, res) => {
 
     const __dirname=path.resolve();
     const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
-    const fileName=Math.random()+"_doc"+'.pdf';
+    const fileName=Math.random()+"doc"+'.pdf';
     const filePath=path.join('./data',fileName);
 
     //chart data
     const myChart = new QuickChart();
     myChart.setConfig({
-        type: 'bar',
-        data: {
-            labels: getAllHome.map((home)=>{
-                return home.studentId.name;
-            }),
-            datasets: [{
-                label: 'Total Mark',
-                data: getAllHome.map((home)=>{
-                    return home.totalMark;
-                }),
-            }]
-        },
-        options: {
-            scales: {
-                yAxes: [{
-                    ticks: {
-                        beginAtZero: true,
-                        max: 100
-                    }
-                }]
-            }
-        }
+        // type: 'bar',
+        // data: {
+        //     labels: getAllHome.map((home)=>{
+        //         return home.studentId.name + " - " + home.assignmentId.title;
+        //     }),
+        //     datasets: [{
+        //         label: 'Total Mark',
+        //         data: getAllHome.map((home)=>{
+        //             return home.totalMark;
+        //         }),
+        //     }]
+        // },
+        // options: {
+        //     scales: {
+        //         yAxes: [{
+        //             ticks: {
+        //                 beginAtZero: true,
+        //                 max: 100
+        //             }
+        //         }]
+        //     }
+        // }
+        
 
 
 
         // type: 'pie',
         // data: {
         //     labels: getAllHome.map((home)=>{
-        //         return home.studentId.name;
+        //         return home.studentId.name+" - "+home.assignmentId.title;
         //     }),
         //     datasets: [{
         //         label: 'Total Mark',
@@ -228,8 +229,35 @@ export const getAllStuPdf = async (req, res) => {
         //         text: 'Total Mark',
         //         fontSize: 36,
         //     }
+
+        // }
+
+        type: 'donut',
+        data: {
+            labels: getAllHome.map((home)=>{
+                return home.studentId.name+" - "+home.assignmentId.title;
+            }
+            ),
+            datasets: [{
+                label: 'Total Mark',
+                data: getAllHome.map((home)=>{
+                    return home.totalMark;
+                }
+                ),
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: 'Total Mark',
+                fontSize: 36,
+            }
+
+        }
+
+
             
-    });
+    }).setWidth(1000).setHeight(400).setBackgroundColor('transparent');
     const chartUrl = await myChart.getShortUrl();
     const document={
             html:html,
