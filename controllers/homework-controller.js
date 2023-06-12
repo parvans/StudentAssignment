@@ -56,7 +56,11 @@ export const attentAssignment = async (req, res) => {
         }
         if(question?.answer===answer.answer){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
-                $inc:{totalMark:question.mark}
+                $inc:{totalMark:question?.mark}
+            },{new:true});
+        }else{
+            const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
+                $inc:{totalMark:0}
             },{new:true});
         }
     })
@@ -141,6 +145,7 @@ export const generatePdf = async (req, res) => {
             html:html,
             data:{
                     student:getStudetAsssign.studentId.name,
+                    subject:getStudetAsssign.assignmentId.subject,
                     assignment:getStudetAsssign.assignmentId.title,
                     totalMark:getStudetAsssign.assignmentId.totalMark,
                     studentMark:getStudetAsssign.totalMark+" / "+getStudetAsssign.assignmentId.totalMark,
@@ -174,102 +179,82 @@ export const generatePdf = async (req, res) => {
 }
 
 export const getAllStuPdf = async (req, res) => {
-    const getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
-    // res.status(200).json(getAllHome);
-
+    const sub=req.query.sub;
+    const assign=req.query.assign;
+    let arr=[];
+    let getAllHome;
     const __dirname=path.resolve();
     const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
     const fileName=Math.random()+"doc"+'.pdf';
     const filePath=path.join('./data',fileName);
 
+    if(sub){
+        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+        getAllHome.map((data)=>{
+            if(data.assignmentId.subject==sub){
+                arr.push(data);
+            }
+        })
+    }else if (assign){
+        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+        getAllHome.map((data)=>{
+            if(data.assignmentId.title==assign){
+                arr.push(data);
+            }
+        })
+    }else{
+        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+        arr=getAllHome;
+    }
+    // const getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+
+    
     //chart data
     const myChart = new QuickChart();
     myChart.setConfig({
-        // type: 'bar',
-        // data: {
-        //     labels: getAllHome.map((home)=>{
-        //         return home.studentId.name + " - " + home.assignmentId.title;
-        //     }),
-        //     datasets: [{
-        //         label: 'Total Mark',
-        //         data: getAllHome.map((home)=>{
-        //             return home.totalMark;
-        //         }),
-        //     }]
-        // },
-        // options: {
-        //     scales: {
-        //         yAxes: [{
-        //             ticks: {
-        //                 beginAtZero: true,
-        //                 max: 100
-        //             }
-        //         }]
-        //     }
-        // }
-        
-
-
-
-        // type: 'pie',
-        // data: {
-        //     labels: getAllHome.map((home)=>{
-        //         return home.studentId.name+" - "+home.assignmentId.title;
-        //     }),
-        //     datasets: [{
-        //         label: 'Total Mark',
-        //         data: getAllHome.map((home)=>{
-        //             return home.totalMark;
-        //         }),
-        //     }]
-        // },
-        // options: {
-        //     title: {
-        //         display: true,
-        //         text: 'Total Mark',
-        //         fontSize: 36,
-        //     }
-
-        // }
-
-        type: 'donut',
+        type: 'bar',
         data: {
-            labels: getAllHome.map((home)=>{
-                return home.studentId.name+" - "+home.assignmentId.title;
-            }
-            ),
+            labels: arr.map((data)=>{
+                return data.studentId.name +" / "+data.assignmentId.title;
+            }),
             datasets: [{
-                label: 'Total Mark',
-                data: getAllHome.map((home)=>{
-                    return home.totalMark;
-                }
-                ),
+                label: 'Student Mark',
+                data: arr.map((data)=>{
+                    return data.totalMark;
+                }),
+                backgroundColor: 'blue'
+            },{
+                label: 'Assignment Mark',
+                data: arr.map((data)=>{
+                    return data.assignmentId.totalMark;
+                }),
+                backgroundColor: 'red'
             }]
         },
         options: {
-            title: {
-                display: true,
-                text: 'Total Mark',
-                fontSize: 36,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        max: 100,
+                    }
+                }]
             }
-
         }
-
-
-            
+        
+  
     }).setWidth(1000).setHeight(400).setBackgroundColor('transparent');
     const chartUrl = await myChart.getShortUrl();
     const document={
             html:html,
             data:{
-                    students:getAllHome.map((home)=>{
+                    students:arr.map((data)=>{
                         return {
-                            student:home.studentId.name,
-                            assignment:home.assignmentId.title,
-                            totalMark:home.assignmentId.totalMark,
-                            studentMark:home.totalMark+" / "+home.assignmentId.totalMark,
-                            questions:home.assignmentId.questions,
-                            answers:home.answers
+                            student:data.studentId.name,
+                            subject:data.assignmentId.subject,
+                            assignment:data.assignmentId.title,
+                            totalMark:data.assignmentId.totalMark,
+                            studentMark:data.totalMark,
                         }
                     }),
                     chartUrl:chartUrl
@@ -285,5 +270,6 @@ export const getAllStuPdf = async (req, res) => {
         })
 
         res.status(200).json({message:"Pdf created successfully"});
+
 }    
 
