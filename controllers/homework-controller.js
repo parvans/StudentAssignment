@@ -1,9 +1,7 @@
 import { Assignment } from "../models/assignment-model.js";
 import { HomeWork } from "../models/homework-model.js";
 import { User } from "../models/user-model.js";
-import PDFDocument from 'pdfkit'
 import fs from 'fs'
-import { get } from "http";
 import path from "path";
 import options from '../helpers/options.js'
 import pdf from "pdf-creator-node";
@@ -105,78 +103,78 @@ export const getStuPertiAttHomeWork = async (req, res) => {
     res.status(200).json(getAAssign);
 }
 
-export const stuToPdf = async (req, res) => {
-    const userId=req.user._id;
-    const student=await User.findOne({_id:userId,isFaculty:false});
-    const getAAssign=await HomeWork.find({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents').populate("studentId")
-// Create a document
-const doc = new PDFDocument();
-  // Saving the pdf file in root directory.
-  const time=new Date().getTime();
-doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
+// export const stuToPdf = async (req, res) => {
+//     const userId=req.user._id;
+//     const student=await User.findOne({_id:userId,isFaculty:false});
+//     const getAAssign=await HomeWork.find({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents').populate("studentId")
+// // Create a document
+// const doc = new PDFDocument();
+//   // Saving the pdf file in root directory.
+//   const time=new Date().getTime();
+// doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
 
 
-// doc.fontSize(15).text(`Student Name: ${student.name}`, 100, 100).fillColor('black');
-getAAssign.map((assignment)=>{
-    doc.fontSize(25).text(`${assignment.assignmentId.title}`, 100, 100).fillColor('yellow');
-    // doc.fontSize(15).text(`Student Name: ${assignment.studentId.name}`, 200, 200).fillColor('black');
-    // doc.fontSize(15).text(`Total Mark: ${assignment.assignmentId.totalMark}`, 100, 100).fillColor('black');
-})
-console.log(getAAssign);
+// // doc.fontSize(15).text(`Student Name: ${student.name}`, 100, 100).fillColor('black');
+// getAAssign.map((assignment)=>{
+//     doc.fontSize(25).text(`${assignment.assignmentId.title}`, 100, 100).fillColor('yellow');
+//     // doc.fontSize(15).text(`Student Name: ${assignment.studentId.name}`, 200, 200).fillColor('black');
+//     // doc.fontSize(15).text(`Total Mark: ${assignment.assignmentId.totalMark}`, 100, 100).fillColor('black');
+// })
+// console.log(getAAssign);
 
-// Finalize PDF file
-doc.end();
+// // Finalize PDF file
+// doc.end();
 
-res.status(200).json({message:"Pdf created successfully"});
-}
-
-
-export const generatePdf = async (req, res) => {
-    const studentId=req.query.id;
-    const assignmentId=req.params.id;
-    const __dirname=path.resolve();
-    const html=fs.readFileSync(path.join(__dirname,'./view/template.html'),'utf-8');
-    const fileName=Math.random()+"_doc"+'.pdf';
-    const filePath=path.join('./data',fileName);
-    const getStudetAsssign=await HomeWork.findOne({studentId:studentId,assignmentId:assignmentId}).populate("assignmentId",'-attendedStudents').populate("studentId")
-
-    // console.log(getStudetAsssign.assignmentId.questions);
-    const document={
-            html:html,
-            data:{
-                    student:getStudetAsssign.studentId.name,
-                    subject:getStudetAsssign.assignmentId.subject,
-                    assignment:getStudetAsssign.assignmentId.title,
-                    totalMark:getStudetAsssign.assignmentId.totalMark,
-                    studentMark:getStudetAsssign.totalMark+" / "+getStudetAsssign.assignmentId.totalMark,
-                    questions:getStudetAsssign.assignmentId.questions.map((question)=>{
-                        return {
-                            question:question.question,
-                            mark:question.mark,
-                            currectAnswer:question.answer,
-                        }
-                    }),
-                    answers:getStudetAsssign.answers.map((answer)=>{
-                        return {
-                            question:answer.questNo,
-                            answer:answer.answer,
-                        }
-                    })
-            },
-            path:filePath,
-        };
+// res.status(200).json({message:"Pdf created successfully"});
+// }
 
 
-        pdf.create(document,options).then((res)=>{
-            console.log(res);
-        }).catch((error)=>{
-            console.log(error);
-        })
+// export const generatePdf = async (req, res) => {
+//     const studentId=req.query.id;
+//     const assignmentId=req.params.id;
+//     const __dirname=path.resolve();
+//     const html=fs.readFileSync(path.join(__dirname,'./view/template.html'),'utf-8');
+//     const fileName=Math.random()+"_doc"+'.pdf';
+//     const filePath=path.join('./data',fileName);
+//     const getStudetAsssign=await HomeWork.findOne({studentId:studentId,assignmentId:assignmentId}).populate("assignmentId",'-attendedStudents').populate("studentId")
+
+//     // console.log(getStudetAsssign.assignmentId.questions);
+//     const document={
+//             html:html,
+//             data:{
+//                     student:getStudetAsssign.studentId.name,
+//                     subject:getStudetAsssign.assignmentId.subject,
+//                     assignment:getStudetAsssign.assignmentId.title,
+//                     totalMark:getStudetAsssign.assignmentId.totalMark,
+//                     studentMark:getStudetAsssign.totalMark+" / "+getStudetAsssign.assignmentId.totalMark,
+//                     questions:getStudetAsssign.assignmentId.questions.map((question)=>{
+//                         return {
+//                             question:question.question,
+//                             mark:question.mark,
+//                             currectAnswer:question.answer,
+//                         }
+//                     }),
+//                     answers:getStudetAsssign.answers.map((answer)=>{
+//                         return {
+//                             question:answer.questNo,
+//                             answer:answer.answer,
+//                         }
+//                     })
+//             },
+//             path:filePath,
+//         };
+
+
+//         pdf.create(document,options).then((res)=>{
+//             console.log(res);
+//         }).catch((error)=>{
+//             console.log(error);
+//         })
             
-            res.status(200).json({message:"Pdf created successfully"});
-            // res.status(200).json(getStudetAsssign);
+//             res.status(200).json({message:"Pdf created successfully"});
+//             // res.status(200).json(getStudetAsssign);
 
-}
+// }
 
 export const getAllStuPdf = async (req, res) => {
     const sub=req.query.sub;
