@@ -234,7 +234,7 @@ export const getAllStuPdf = async (req, res) => {
                 yAxes: [{
                     ticks: {
                         beginAtZero: true,
-                        max: 100,
+                        max: 50,
                     }
                 }]
             }
