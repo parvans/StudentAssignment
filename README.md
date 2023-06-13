@@ -17,6 +17,7 @@ This is a simple online school assessment application. It is the Backend build w
 7. Login as the user
 8. Take the test
 9. View the score
+10. View Student's score in the pdf format
 
 ## Contributing
 Pull requests are welcome. For major changes, please open an issue first to discuss what you would like to change.
