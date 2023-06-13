@@ -6,6 +6,7 @@ import path from "path";
 import options from '../helpers/options.js'
 import pdf from "pdf-creator-node";
 import QuickChart from "quickchart-js";
+import { log } from "console";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -81,7 +82,7 @@ export const getAStudentHomeWork = async (req, res) => {
     const userId=req.user._id;
     const user=await User.findOne({_id:userId,isFaculty:true});
     if(!user) return res.status(403).json({message:"Access denied"});
-    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId")
+    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId",'-attendedStudents')
     if(!getAAssign) return res.status(404).json({message:"Assignment not found with this student"});
     res.status(200).json(getAAssign);
 }
@@ -90,7 +91,7 @@ export const getStuAttHomeWork = async (req, res) => {
     const userId=req.user._id;
     const stuDent=await User.findOne({_id:userId});
     if(!stuDent) return res.status(403).json({message:"Student not found"});
-    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId")
+    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId",'-attendedStudents')
     if(!getAAssign) return res.status(404).json({message:"This student has not attended any assignment"});
     res.status(200).json(getAAssign);
 }
@@ -179,32 +180,44 @@ export const getStuPertiAttHomeWork = async (req, res) => {
 export const getAllStuPdf = async (req, res) => {
     const sub=req.query.sub;
     const assign=req.query.assign;
+    const studentId=req.query.id;
     let arr=[];
-    let getAllHome;
+    let getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
     const __dirname=path.resolve();
     const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
-    const fileName=Math.random()+"doc"+'.pdf';
+    const fileName="doc_"+Math.random()+'.pdf';
     const filePath=path.join('./data',fileName);
 
     if(sub){
-        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+        let subFound=false;
         getAllHome.map((data)=>{
             if(data.assignmentId.subject==sub){
                 arr.push(data);
+                subFound=true;
             }
         })
+        if(!subFound) return res.status(404).json({message:"No data found"});
     }else if (assign){
-        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
+        let assignFound=false;
         getAllHome.map((data)=>{
             if(data.assignmentId.title==assign){
                 arr.push(data);
+                assignFound=true;
             }
         })
+        if(!assignFound) return res.status(404).json({message:"No data found"});
+    }else if(studentId){
+        let studentFound=false;
+        getAllHome.map((data)=>{
+            if(data.studentId._id==studentId){
+                arr.push(data);
+                studentFound=true;
+            }
+        })
+        if(!studentFound) return res.status(404).json({message:"No data found"});
     }else{
-        getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
         arr=getAllHome;
     }
-    // const getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
 
     
     //chart data
