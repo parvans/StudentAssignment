@@ -36,10 +36,10 @@ export const attentAssignment = async (req, res) => {
     const result=await newHomeWork.save();
 
     // adding the student's answer to the homework
-    result.answers.map(async (answer)=>{
+    result.answers.map(async (items)=>{
         const update=await HomeWork.findByIdAndUpdate(result._id,{
             $set:{
-                [`answers.${answer.questNo-1}.answer`]:req.body.answers[answer.questNo-1]?.answer
+                [`answers.${items.questNo-1}.answer`]:req.body.answers[items.questNo-1]?.answer
             }
         },{new:true});
 
