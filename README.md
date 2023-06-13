@@ -1,8 +1,7 @@
 # Online School Assessment
 
 ## Description
-This is a simple online school assessment application. It is a web application that allows a user to take a test and get a score. The application is built using the Django framework.
-
+This is a simple online school assessment application. It is the Backend build with Node.js and Express.js.The database used is MongoDB.
 ## Installation
 1. Clone the repository
 2. Create a virtual environment
