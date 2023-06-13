@@ -1,13 +1,12 @@
 import { Assignment } from "../models/assignment-model.js";
 import { HomeWork } from "../models/homework-model.js";
 import { User } from "../models/user-model.js";
-import PDFDocument from 'pdfkit'
 import fs from 'fs'
-import { get } from "http";
 import path from "path";
 import options from '../helpers/options.js'
 import pdf from "pdf-creator-node";
 import QuickChart from "quickchart-js";
+import { log } from "console";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -56,7 +55,11 @@ export const attentAssignment = async (req, res) => {
         }
         if(question?.answer===answer.answer){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
-                $inc:{totalMark:question.mark}
+                $inc:{totalMark:question?.mark}
+            },{new:true});
+        }else{
+            const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
+                $inc:{totalMark:0}
             },{new:true});
         }
     })
@@ -79,7 +82,7 @@ export const getAStudentHomeWork = async (req, res) => {
     const userId=req.user._id;
     const user=await User.findOne({_id:userId,isFaculty:true});
     if(!user) return res.status(403).json({message:"Access denied"});
-    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId")
+    const getAAssign=await HomeWork.findOne({assignmentId:req.params.id,studentId:req.query.id}).populate("assignmentId",'-attendedStudents')
     if(!getAAssign) return res.status(404).json({message:"Assignment not found with this student"});
     res.status(200).json(getAAssign);
 }
@@ -88,7 +91,7 @@ export const getStuAttHomeWork = async (req, res) => {
     const userId=req.user._id;
     const stuDent=await User.findOne({_id:userId});
     if(!stuDent) return res.status(403).json({message:"Student not found"});
-    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId")
+    const getAAssign=await HomeWork.find({studentId:userId}).populate("assignmentId",'-attendedStudents')
     if(!getAAssign) return res.status(404).json({message:"This student has not attended any assignment"});
     res.status(200).json(getAAssign);
 }
@@ -101,175 +104,95 @@ export const getStuPertiAttHomeWork = async (req, res) => {
     res.status(200).json(getAAssign);
 }
 
-export const stuToPdf = async (req, res) => {
-    const userId=req.user._id;
-    const student=await User.findOne({_id:userId,isFaculty:false});
-    const getAAssign=await HomeWork.find({studentId:userId,assignmentId:req.params.id}).populate("assignmentId",'-attendedStudents').populate("studentId")
-// Create a document
-const doc = new PDFDocument();
-  // Saving the pdf file in root directory.
-  const time=new Date().getTime();
-doc.pipe(fs.createWriteStream(`./data/${student.name}${time}.pdf`));
-
-
-// doc.fontSize(15).text(`Student Name: ${student.name}`, 100, 100).fillColor('black');
-getAAssign.map((assignment)=>{
-    doc.fontSize(25).text(`${assignment.assignmentId.title}`, 100, 100).fillColor('yellow');
-    // doc.fontSize(15).text(`Student Name: ${assignment.studentId.name}`, 200, 200).fillColor('black');
-    // doc.fontSize(15).text(`Total Mark: ${assignment.assignmentId.totalMark}`, 100, 100).fillColor('black');
-})
-console.log(getAAssign);
-
-// Finalize PDF file
-doc.end();
-
-res.status(200).json({message:"Pdf created successfully"});
-}
-
-
-export const generatePdf = async (req, res) => {
-    const studentId=req.query.id;
-    const assignmentId=req.params.id;
-    const __dirname=path.resolve();
-    const html=fs.readFileSync(path.join(__dirname,'./view/template.html'),'utf-8');
-    const fileName=Math.random()+"_doc"+'.pdf';
-    const filePath=path.join('./data',fileName);
-    const getStudetAsssign=await HomeWork.findOne({studentId:studentId,assignmentId:assignmentId}).populate("assignmentId",'-attendedStudents').populate("studentId")
-
-    // console.log(getStudetAsssign.assignmentId.questions);
-    const document={
-            html:html,
-            data:{
-                    student:getStudetAsssign.studentId.name,
-                    assignment:getStudetAsssign.assignmentId.title,
-                    totalMark:getStudetAsssign.assignmentId.totalMark,
-                    studentMark:getStudetAsssign.totalMark+" / "+getStudetAsssign.assignmentId.totalMark,
-                    questions:getStudetAsssign.assignmentId.questions.map((question)=>{
-                        return {
-                            question:question.question,
-                            mark:question.mark,
-                            currectAnswer:question.answer,
-                        }
-                    }),
-                    answers:getStudetAsssign.answers.map((answer)=>{
-                        return {
-                            question:answer.questNo,
-                            answer:answer.answer,
-                        }
-                    })
-            },
-            path:filePath,
-        };
-
-
-        pdf.create(document,options).then((res)=>{
-            console.log(res);
-        }).catch((error)=>{
-            console.log(error);
-        })
-            
-            res.status(200).json({message:"Pdf created successfully"});
-            // res.status(200).json(getStudetAsssign);
-
-}
-
 export const getAllStuPdf = async (req, res) => {
-    const getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
-    // res.status(200).json(getAllHome);
-
+    const sub=req.query.sub;
+    const assign=req.query.assign;
+    const studentId=req.query.id;
+    let arr=[];
+    let getAllHome=await HomeWork.find().populate("assignmentId",'-attendedStudents').populate("studentId")
     const __dirname=path.resolve();
     const html=fs.readFileSync(path.join(__dirname,'./view/students.html'),'utf-8');
-    const fileName=Math.random()+"doc"+'.pdf';
+    const fileName="doc_"+Math.random()+'.pdf';
     const filePath=path.join('./data',fileName);
 
+    if(sub){
+        let subFound=false;
+        getAllHome.map((data)=>{
+            if(data.assignmentId.subject==sub){
+                arr.push(data);
+                subFound=true;
+            }
+        })
+        if(!subFound) return res.status(404).json({message:"No data found"});
+    }else if (assign){
+        let assignFound=false;
+        getAllHome.map((data)=>{
+            if(data.assignmentId.title==assign){
+                arr.push(data);
+                assignFound=true;
+            }
+        })
+        if(!assignFound) return res.status(404).json({message:"No data found"});
+    }else if(studentId){
+        let studentFound=false;
+        getAllHome.map((data)=>{
+            if(data.studentId._id==studentId){
+                arr.push(data);
+                studentFound=true;
+            }
+        })
+        if(!studentFound) return res.status(404).json({message:"No data found"});
+    }else{
+        arr=getAllHome;
+    }
+
+    
     //chart data
     const myChart = new QuickChart();
     myChart.setConfig({
-        // type: 'bar',
-        // data: {
-        //     labels: getAllHome.map((home)=>{
-        //         return home.studentId.name + " - " + home.assignmentId.title;
-        //     }),
-        //     datasets: [{
-        //         label: 'Total Mark',
-        //         data: getAllHome.map((home)=>{
-        //             return home.totalMark;
-        //         }),
-        //     }]
-        // },
-        // options: {
-        //     scales: {
-        //         yAxes: [{
-        //             ticks: {
-        //                 beginAtZero: true,
-        //                 max: 100
-        //             }
-        //         }]
-        //     }
-        // }
-        
-
-
-
-        // type: 'pie',
-        // data: {
-        //     labels: getAllHome.map((home)=>{
-        //         return home.studentId.name+" - "+home.assignmentId.title;
-        //     }),
-        //     datasets: [{
-        //         label: 'Total Mark',
-        //         data: getAllHome.map((home)=>{
-        //             return home.totalMark;
-        //         }),
-        //     }]
-        // },
-        // options: {
-        //     title: {
-        //         display: true,
-        //         text: 'Total Mark',
-        //         fontSize: 36,
-        //     }
-
-        // }
-
-        type: 'donut',
+        type: 'bar',
         data: {
-            labels: getAllHome.map((home)=>{
-                return home.studentId.name+" - "+home.assignmentId.title;
-            }
-            ),
+            labels: arr.map((data)=>{
+                return data.studentId.name +" / "+data.assignmentId.title;
+            }),
             datasets: [{
-                label: 'Total Mark',
-                data: getAllHome.map((home)=>{
-                    return home.totalMark;
-                }
-                ),
+                label: 'Student Mark',
+                data: arr.map((data)=>{
+                    return data.totalMark;
+                }),
+                backgroundColor: 'blue'
+            },{
+                label: 'Assignment Mark',
+                data: arr.map((data)=>{
+                    return data.assignmentId.totalMark;
+                }),
+                backgroundColor: 'red'
             }]
         },
         options: {
-            title: {
-                display: true,
-                text: 'Total Mark',
-                fontSize: 36,
+            scales: {
+                yAxes: [{
+                    ticks: {
+                        beginAtZero: true,
+                        max: 30,
+                    }
+                }]
             }
-
         }
-
-
-            
+        
+  
     }).setWidth(1000).setHeight(400).setBackgroundColor('transparent');
     const chartUrl = await myChart.getShortUrl();
     const document={
             html:html,
             data:{
-                    students:getAllHome.map((home)=>{
+                    students:arr.map((data)=>{
                         return {
-                            student:home.studentId.name,
-                            assignment:home.assignmentId.title,
-                            totalMark:home.assignmentId.totalMark,
-                            studentMark:home.totalMark+" / "+home.assignmentId.totalMark,
-                            questions:home.assignmentId.questions,
-                            answers:home.answers
+                            student:data.studentId.name,
+                            subject:data.assignmentId.subject,
+                            assignment:data.assignmentId.title,
+                            totalMark:data.assignmentId.totalMark,
+                            studentMark:data.totalMark,
                         }
                     }),
                     chartUrl:chartUrl
@@ -277,13 +200,16 @@ export const getAllStuPdf = async (req, res) => {
             path:filePath,
         };
 
-        pdf.create(document,options).then((res)=>{
-            console.log(res);
+        pdf.create(document,options).then((ress)=>{
+            console.log(ress);
+            res.sendFile(ress.filename);
         }
         ).catch((error)=>{
             console.log(error);
         })
 
-        res.status(200).json({message:"Pdf created successfully"});
+        // res.status(200).json({message:"Pdf created successfully"});
+        // res.sendFile(filePath);
+
 }    
 

@@ -8,6 +8,10 @@ export const Assignment = mongoose.model(
         type: String,
         required: true,
       },
+      subject: {
+        type: String,
+        required: true,
+      },
       questions: [
         {
           questionNo: {
