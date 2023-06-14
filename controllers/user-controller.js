@@ -32,6 +32,6 @@ export const userLogin = async (req, res) => {
 
 export const allStudents = async (req, res) => {
     const students = await User.find({isFaculty:false}).select("-password");
-    res.status(200).json(students);
+    res.status(200).json({students:students});
 }
     
