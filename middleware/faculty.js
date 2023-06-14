@@ -9,8 +9,8 @@ async function faculty(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.faculty = decoded;
-        const faculty = await User.findById(req.faculty._id);
+        req.user = decoded;
+        const faculty = await User.findById(req.user._id);
         if (!faculty.isFaculty) return res.status(403).json({message:'Access denied.'});
         next();
     } catch (ex) {
