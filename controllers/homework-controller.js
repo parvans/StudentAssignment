@@ -47,6 +47,7 @@ export const attentAssignment = async (req, res) => {
     
     const updatedHomeWork=await HomeWork.findById(result._id);
     updatedHomeWork.answers.map(async (answer)=>{
+        let incorrect=false
         const question=assignment.questions.find(question=>question.questionNo===answer.questNo);
         if(answer.answer===""){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
@@ -57,7 +58,9 @@ export const attentAssignment = async (req, res) => {
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
                 $inc:{totalMark:question?.mark}
             },{new:true});
-        }else{
+            incorrect=true
+        }
+        if(!incorrect){
             const updatedHomeWork=await HomeWork.findByIdAndUpdate(result._id,{
                 $inc:{totalMark:0}
             },{new:true});
