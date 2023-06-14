@@ -74,7 +74,7 @@ export const attentAssignment = async (req, res) => {
 }
 
 export const getAllHomeWork = async (req, res) => {
-    const getAllHomeWork = await HomeWork.find()
+    const getAllHomeWork = await HomeWork.find().populate('studentId','name').populate('assignmentId');
     res.status(200).json(getAllHomeWork);
 }
 
