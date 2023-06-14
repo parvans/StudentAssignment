@@ -6,7 +6,6 @@ import path from "path";
 import options from '../helpers/options.js'
 import pdf from "pdf-creator-node";
 import QuickChart from "quickchart-js";
-import { log } from "console";
 export const attentAssignment = async (req, res) => {
     const userId=req.user._id;
     const student=await User.findOne({_id:userId,isFaculty:false});
@@ -21,15 +20,14 @@ export const attentAssignment = async (req, res) => {
             options:question.options,
         }
     })
-    // console.log(questions);
-    // res.status(200).send(questions);
+
+    // adding the questions to the homework
     const newHomeWork = new HomeWork({
         studentId:userId,
         assignmentId:req.params.id,
         answers:questions.map(question=>{
             return {
                 questNo:questions.indexOf(question)+1,
-                // answer:req.body,
             }
         })
     })
@@ -45,6 +43,8 @@ export const attentAssignment = async (req, res) => {
 
     })
 
+    // checking the answers and calculating the total mark
+    
     const updatedHomeWork=await HomeWork.findById(result._id);
     updatedHomeWork.answers.map(async (answer)=>{
         const question=assignment.questions.find(question=>question.questionNo===answer.questNo);
